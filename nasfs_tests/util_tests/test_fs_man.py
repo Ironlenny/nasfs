@@ -1,3 +1,4 @@
+from bsddb3 import db
 import pytest
 import sys
 sys.path.append ("../../nasfs_utils/")
@@ -10,6 +11,7 @@ raidLv = 1
 dev = ['/dev/sda1']
 super_dict = {'vol': dev, 'raid': raidLv}
 mount = './'
+meta_db = 'meta_db'
 
 def _open_super_file():
     file = open(super_file, 'rb')
@@ -23,6 +25,15 @@ def test_create_super_file():
     with pytest.raises(FileExistsError):
         test_obj.create_fs("/dev/sda1", 1)
     os.remove(super_file)
+
+def test_create_meta_db():
+    test = {'root': 'self'}
+    test_obj = fs_man.FSMan()
+    test_obj.create_fs(dev, raidLv)
+    self.db = db.open(meta_db, None, db.DB_BTREE, db.DB_RDONLY)
+    assert test == db['root']
+    os.remove(super_file)
+    os.remove(meta_db)
 
 def test_add_volume():
     test_obj = fs_man.FSMan()
