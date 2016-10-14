@@ -1,14 +1,14 @@
 #!/usr/bin/python3
-# TODO: Disallow duplicates in the database
-import bson
-import bsddb3
+import pdb
+import bson # Do not use debian version. Use https://github.com/py-bson/bson
+import lmdb
 
 class FSMan():
 
     def __init__(self):
-        self._db_name = "meta_db"
-        self._super_file = "super_file"
-        self.db = bsddb3.db.DB()
+        self._db_name = 'meta_db'
+        self._super_file = 'super_file'
+        self.db = lmdb.open(self._db_name)
 
     def create_fs(self, vol, raidLv, uid, gid, perm):
         root_rec = {'contains': ['.', '..'], 'uid': uid, 'gid': gid,\
@@ -17,10 +17,8 @@ class FSMan():
         file.write(bson.dumps({"vol":vol, "raid":raidLv}))
         file.close()
 
-        self.db.open(self._db_name, '1', bsddb3.db.DB_BTREE,\
-                bsddb3.db.DB_CREATE)
-        self.db.put(b'self', bson.dumps(root_rec))
-        self.db.close()
+        with self.db.begin(write=True) as txn:
+            txn.put(b'self', bson.dumps(root_rec))
 
     def add_vol(self, mount, vol):
         file = open( mount + self._super_file, 'br+')

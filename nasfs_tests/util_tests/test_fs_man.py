@@ -1,10 +1,11 @@
-from bsddb3 import db
+import lmdb
 import pytest
 import sys
 sys.path.append ("../../nasfs_utils/")
 import fs_man
-import bson
+import bson # Do not use debian version. Use https://github.com/py-bson/bson
 import os
+import shutil
 
 super_file = 'super_file'
 raidLv = 1
@@ -24,8 +25,8 @@ def _cleanup():
     if os.path.isfile(super_file):
         os.remove(super_file)
 
-    if os.path.isfile(meta_db):
-        os.remove(meta_db)
+    if os.path.isdir(meta_db):
+        shutil.rmtree(meta_db)
 
 def test_create_super_file():
     _cleanup()
@@ -42,9 +43,10 @@ def test_create_meta_db():
             , 'atime': None, 'dir': True}
     test_obj = fs_man.FSMan()
     test_obj.create_fs(dev, raidLv, uid, gid, perm)
-    test_db = db.DB()
-    test_db.open(meta_db, '1', db.DB_BTREE, db.DB_RDONLY)
-    assert test == bson.loads(test_db.get(b'self'))
+    test_db = lmdb.open(meta_db)
+    with test_db.begin() as txn:
+        rec = txn.get(b'self')
+    assert test == bson.loads(rec)
 
 def test_add_volume():
     _cleanup()
