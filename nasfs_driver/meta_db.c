@@ -9,9 +9,11 @@ int meta_open(const char *file, unsigned long db_name, bool create,
               MDB_env **env, MDB_dbi *dbi)
 {
   int rc = 0;
-  int buff_size = 11;
+  const int buff_size = 11;
   char buff[buff_size];
   char *name = NULL;
+  MDB_txn *txn = NULL;
+
   if (db_name != 0)
     {
       snprintf(buff, buff_size, "%lu", db_name);
@@ -21,7 +23,6 @@ int meta_open(const char *file, unsigned long db_name, bool create,
   rc = mdb_env_create(env);
   rc = mdb_env_set_maxdbs(*env, meta_max_dbs);
   rc = mdb_env_open(*env, file, 0, 0644);
-  MDB_txn *txn;
   rc = mdb_txn_begin(*env, NULL, 0, &txn);
   if (create == true)
     rc = mdb_dbi_open(txn, name, MDB_CREATE, dbi);
