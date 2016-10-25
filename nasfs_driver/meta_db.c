@@ -26,6 +26,8 @@ int meta_open(const char *file, unsigned long db_name, bool create,
   rc = mdb_txn_begin(*env, NULL, 0, &txn);
   if (create == true)
     rc = mdb_dbi_open(txn, name, MDB_CREATE, dbi);
+  else
+    rc = mdb_dbi_open(txn, name, 0, dbi);
 
   rc = mdb_dbi_open(txn, name, 0, dbi);
 
