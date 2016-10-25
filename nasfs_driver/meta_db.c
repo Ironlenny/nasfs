@@ -31,3 +31,9 @@ int meta_open(const char *file, unsigned long db_name, bool create,
 
   return rc;
 }
+
+void meta_close( MDB_env **env, MDB_dbi *dbi)
+{
+  mdb_close(*env, *dbi);
+  mdb_env_close(*env);
+}

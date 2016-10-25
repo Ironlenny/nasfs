@@ -1,8 +1,9 @@
 #include <stdbool.h>
 #include <lmdb.h>
 
-int meta_open(const char *, unsigned long, bool, MDB_env **, MDB_dbi *);
-void meta_close();
+int meta_open(const char *, unsigned long, bool, MDB_env **, MDB_dbi *, int,
+              MDB_txn *);
+void meta_close(MDB_env **, MDB_dbi *);
 void meta_get();
 void meta_put();
 void meta_lock();
