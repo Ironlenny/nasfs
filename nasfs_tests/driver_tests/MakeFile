@@ -1,0 +1,2 @@
+test:
+	clang test_meta_db.c ../../nasfs_driver/meta_db.c -Wall -l tap -l lmdb -g -o test
