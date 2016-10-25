@@ -30,6 +30,11 @@ int meta_open(const char *file, unsigned long db_name, bool create,
     rc = mdb_dbi_open(txn, name, 0, dbi);
 
   rc = mdb_dbi_open(txn, name, 0, dbi);
+  if (rc)
+    {
+      fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+      meta_close(env, dbi);
+    }
 
   return rc;
 }
