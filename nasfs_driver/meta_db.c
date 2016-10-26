@@ -31,9 +31,10 @@ int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
     {
       fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
       meta_close(env, dbi);
+      return rc;
     }
 
-  return rc;
+  return 0;
 }
 
 void meta_close( MDB_env **env, MDB_dbi *dbi)
