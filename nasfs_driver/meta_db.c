@@ -3,6 +3,17 @@
 #include <lmdb.h>
 #include <stdio.h>
 
+int error_rpt( int rc )
+{
+  if(rc)
+    {
+      fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+      return rc;
+    }
+
+  return 0;
+}
+
 int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
               MDB_dbi *dbi, int meta_max_db, MDB_txn *txn)
 {
