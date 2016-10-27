@@ -14,6 +14,12 @@ int error_rpt( int rc )
   return 0;
 }
 
+void meta_close( MDB_env **env, MDB_dbi *dbi)
+{
+  mdb_close(*env, *dbi);
+  mdb_env_close(*env);
+}
+
 int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
               MDB_dbi *dbi, int meta_max_db, MDB_txn *txn)
 {
