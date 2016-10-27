@@ -1,7 +1,9 @@
-#include "meta_db.h"
 #include <stdbool.h>
 #include <lmdb.h>
 #include <stdio.h>
+
+MDB_txn *txn = NULL;
+int rc = 0;
 
 int error_rpt( int rc )
 {
@@ -21,7 +23,7 @@ void meta_close( MDB_env **env, MDB_dbi *dbi)
 }
 
 int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
-              MDB_dbi *dbi, int meta_max_db, MDB_txn *txn)
+              MDB_dbi *dbi, int meta_max_db)
 {
   int rc = 0;
   const int buff_size = 11;
