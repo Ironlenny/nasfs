@@ -17,28 +17,51 @@ int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
       name = buff;
     }
 
-  rc = mdb_env_create(env);
-  rc = mdb_env_set_maxdbs(*env, meta_max_db);
-  rc = mdb_env_open(*env, file, 0, 0644);
-  rc = mdb_txn_begin(*env, NULL, 0, &txn);
+  error_rpt(mdb_env_create(env));
+  error_rpt(mdb_env_set_maxdbs(*env, meta_max_db));
+  error_rpt(mdb_env_open(*env, file, 0, 0644));
+  error_rpt(mdb_txn_begin(*env, NULL, 0, &txn));
 
   if (create == true)
-    rc = mdb_dbi_open(txn, name, MDB_CREATE, dbi);
+    rc = mdb_dbi_open(txn, name, MDB_CREATE,  dbi);
   else
     rc = mdb_dbi_open(txn, name, 0, dbi);
 
   if (rc)
     {
-      fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+      error_rpt(rc);
       meta_close(env, dbi);
       return rc;
     }
+  mdb_txn_commit(txn);
 
   return 0;
 }
 
-void meta_close( MDB_env **env, MDB_dbi *dbi)
+int meta_get(MDB_env **env, MDB_dbi *dbi, char *meta_key, char *meta_value)
 {
-  mdb_close(*env, *dbi);
-  mdb_env_close(*env);
+  MDB_val key, value;
+  key.mv_size = sizeof(meta_key);
+  key.mv_data = meta_key;
+
+  error_rpt(mdb_txn_begin(*env, NULL, 0, &txn));
+  rc = mdb_get(txn, *dbi, &key, &value);
+  mdb_txn_abort(txn);
+  meta_value = value.mv_data;
+
+  return error_rpt(rc);
+}
+
+int meta_put(MDB_env **env, MDB_dbi *dbi, char *meta_key, char *meta_value)
+{
+  MDB_val key, value;
+  key.mv_size = sizeof(*meta_key);
+  key.mv_data = meta_key;
+  value.mv_size = sizeof(*meta_value);
+  value.mv_data = meta_value;
+
+  error_rpt(mdb_txn_begin(*env, NULL, 0, &txn));
+  error_rpt(mdb_put(txn, *dbi, &key, &value, 0));
+
+  return error_rpt(mdb_txn_commit(txn));
 }
