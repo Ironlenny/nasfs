@@ -9,7 +9,7 @@ int error_rpt( int rc )
 {
   if(rc)
     {
-      fprintf(stderr, "mdb_dbi_open: (%d) %s\n", rc, mdb_strerror(rc));
+      fprintf(stderr, "error: (%d) %s\n", rc, mdb_strerror(rc));
       return rc;
     }
 
