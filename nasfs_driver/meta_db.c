@@ -57,30 +57,30 @@ int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
   return 0;
 }
 
-int meta_get(MDB_env **env, MDB_dbi *dbi, char *meta_key, char *meta_value)
+int meta_get( char *meta_key, char **meta_value)
 {
   MDB_val key, value;
   key.mv_size = sizeof(meta_key);
   key.mv_data = meta_key;
 
-  error_rpt(mdb_txn_begin(*env, NULL, 0, &txn));
-  rc = mdb_get(txn, *dbi, &key, &value);
+  error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
+  rc = mdb_get(txn, dbi, &key, &value);
   mdb_txn_abort(txn);
-  meta_value = value.mv_data;
+  *meta_value = strdup(value.mv_data);
 
   return error_rpt(rc);
 }
 
-int meta_put(MDB_env **env, MDB_dbi *dbi, char *meta_key, char *meta_value)
+int meta_put(char *meta_key, char *meta_input)
 {
   MDB_val key, value;
-  key.mv_size = sizeof(*meta_key);
+  key.mv_size = sizeof(meta_key);
   key.mv_data = meta_key;
-  value.mv_size = sizeof(*meta_value);
-  value.mv_data = meta_value;
+  value.mv_size = sizeof(meta_input);
+  value.mv_data = meta_input;
 
-  error_rpt(mdb_txn_begin(*env, NULL, 0, &txn));
-  error_rpt(mdb_put(txn, *dbi, &key, &value, 0));
+  error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
+  error_rpt(mdb_put(txn, dbi, &key, &value, 0));
 
   return error_rpt(mdb_txn_commit(txn));
 }
