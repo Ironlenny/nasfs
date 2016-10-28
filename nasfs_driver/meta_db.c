@@ -1,9 +1,12 @@
 #include <stdbool.h>
 #include <lmdb.h>
 #include <stdio.h>
+#include <string.h>
 
-MDB_txn *txn = NULL;
-int rc = 0;
+static MDB_txn *txn = NULL;
+static int rc = 0;
+static MDB_env *env = NULL;
+static MDB_dbi dbi;
 
 int error_rpt( int rc )
 {
@@ -16,14 +19,14 @@ int error_rpt( int rc )
   return 0;
 }
 
-void meta_close( MDB_env **env, MDB_dbi *dbi)
+void meta_close()
 {
-  mdb_close(*env, *dbi);
-  mdb_env_close(*env);
+  mdb_close(env, dbi);
+  mdb_env_close(env);
 }
 
-int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
-              MDB_dbi *dbi, int meta_max_db)
+int meta_open(const char *file, unsigned long db_id, bool create,
+              int meta_max_db)
 {
   int rc = 0;
   const int buff_size = 11;
@@ -36,20 +39,20 @@ int meta_open(const char *file, unsigned long db_id, bool create, MDB_env **env,
       name = buff;
     }
 
-  error_rpt(mdb_env_create(env));
-  error_rpt(mdb_env_set_maxdbs(*env, meta_max_db));
-  error_rpt(mdb_env_open(*env, file, 0, 0644));
-  error_rpt(mdb_txn_begin(*env, NULL, 0, &txn));
+  error_rpt(mdb_env_create(&env));
+  error_rpt(mdb_env_set_maxdbs(env, meta_max_db));
+  error_rpt(mdb_env_open(env, file, 0, 0644));
+  error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
 
   if (create == true)
-    rc = mdb_dbi_open(txn, name, MDB_CREATE,  dbi);
+    rc = mdb_dbi_open(txn, name, MDB_CREATE,  &dbi);
   else
-    rc = mdb_dbi_open(txn, name, 0, dbi);
+    rc = mdb_dbi_open(txn, name, 0, &dbi);
 
   if (rc)
     {
       error_rpt(rc);
-      meta_close(env, dbi);
+      meta_close();
       return rc;
     }
   mdb_txn_commit(txn);
