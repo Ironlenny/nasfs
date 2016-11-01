@@ -7,6 +7,7 @@ static MDB_txn *txn = NULL;
 static int rc = 0;
 static MDB_env *env = NULL;
 static MDB_dbi dbi;
+static MDB_val key, value;
 
 int error_rpt( int rc )
 {
@@ -62,7 +63,6 @@ int meta_open(const char *file, unsigned long db_id, bool create,
 
 int meta_get( char *meta_key, char **meta_value)
 {
-  MDB_val key, value;
   key.mv_size = sizeof(meta_key);
   key.mv_data = meta_key;
 
@@ -76,7 +76,6 @@ int meta_get( char *meta_key, char **meta_value)
 
 int meta_put(char *meta_key, char *meta_input)
 {
-  MDB_val key, value;
   key.mv_size = sizeof(meta_key);
   key.mv_data = meta_key;
   value.mv_size = sizeof(meta_input);
