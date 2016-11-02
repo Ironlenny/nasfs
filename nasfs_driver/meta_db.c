@@ -2,6 +2,7 @@
 #include <lmdb.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 static MDB_txn *txn = NULL;
 static int rc = 0;
@@ -89,4 +90,34 @@ int meta_put(char *meta_key, char *meta_input)
   error_rpt(mdb_put(txn, dbi, &key, &value, 0));
 
   return error_rpt(mdb_txn_commit(txn));
+}
+
+int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db)
+{
+  MDB_cursor *cursor;
+  MDB_stat stat;
+  mdb_env_stat(env, &stat);
+  int db_size = stat.ms_entries;
+  int arr_size = db_size * sizeof(char *);
+  int count = 1;
+  meta_open(meta_db, db_id, false, 0);
+  error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
+  mdb_cursor_open(txn, dbi, &cursor);
+  *all_keys = malloc(arr_size);
+  *all_values = malloc(arr_size);
+  mdb_cursor_get(cursor, &key, &value, MDB_FIRST);
+  *all_keys[0] = strdup(key.mv_data);
+  *all_values[0] = strdup(value.mv_data);
+
+  while (mdb_cursor_get(cursor, &key, &value, MDB_NEXT) == 0)
+    {
+      *all_keys[count] = strdup(key.mv_data);
+      *all_values[count] = strdup(value.mv_data);
+      count++;
+    }
+
+  mdb_cursor_close(cursor);
+  mdb_txn_abort(txn);
+
+  return 0;
 }
