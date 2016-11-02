@@ -40,9 +40,13 @@ int meta_open(const char *file, unsigned long db_id, bool create,
       name = buff;
     }
 
-  error_rpt(mdb_env_create(&env));
-  error_rpt(mdb_env_set_maxdbs(env, meta_max_db));
-  error_rpt(mdb_env_open(env, file, 0, 0644));
+  if (env == NULL)
+    {
+      error_rpt(mdb_env_create(&env));
+      error_rpt(mdb_env_set_maxdbs(env, meta_max_db));
+      error_rpt(mdb_env_open(env, file, 0, 0644));
+    }
+
   error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
 
   if (create == true)
