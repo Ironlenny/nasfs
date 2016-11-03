@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 static MDB_txn *txn = NULL;
 static int rc = 0;
@@ -111,6 +112,7 @@ int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db
 
   while (mdb_cursor_get(cursor, &key, &value, MDB_NEXT) == 0)
     {
+      assert(count < db_size);
       *all_keys[count] = strdup(key.mv_data);
       *all_values[count] = strdup(value.mv_data);
       count++;
