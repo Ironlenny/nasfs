@@ -23,6 +23,25 @@ void test_close()
   meta_close();
 }
 
+size_t test_fill()
+{
+  int key = 0;
+  int value = 0;
+  test_open(true, 1, 10);
+
+  for(int i = 0; i < 1000; i++)
+    {
+      char foo[30];
+      char bar[30];
+      sprintf(foo, "%s%d", "foo", key++);
+      sprintf(bar, "%s%d", "bar", value++);
+      meta_put(foo, bar);
+    }
+
+  //  return dbg_get_db_size();
+  return 0
+}
+
 int main()
 {
   plan(NO_PLAN);
