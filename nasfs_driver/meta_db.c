@@ -98,12 +98,13 @@ int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db
 {
   MDB_cursor *cursor;
   MDB_stat stat;
-  mdb_env_stat(env, &stat);
-  int db_size = stat.ms_entries;
-  int arr_size = db_size * sizeof(char *);
-  int count = 1;
   meta_open(meta_db, db_id, false, 0);
   error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
+  error_rpt(mdb_stat(txn, dbi, &stat));
+  size_t db_size = stat.ms_entries;
+  int arr_size = db_size * sizeof(char *);
+  size_t count = 1;
+
   mdb_cursor_open(txn, dbi, &cursor);
   *all_keys = malloc(arr_size);
   *all_values = malloc(arr_size);
