@@ -5,8 +5,8 @@
 #include <sys/stat.h>
 #include <string.h>
 
-const char db_file[] = "./meta_db";
-char *meta_value;
+#define DB_DIR "./meta_db"
+#define RM_DB "rm -rf " DB_DIR
 
 
 int test_open(bool create, unsigned long db_id, int max_db)
