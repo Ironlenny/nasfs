@@ -14,8 +14,7 @@ char **all_values;
 
 int test_open(bool create, unsigned long db_id, int max_db)
 {
-  return meta_open
-    (db_file, db_id, create, max_db);
+  return meta_open(DB_DIR, db_id, create, max_db);
 }
 
 void test_close()
@@ -45,7 +44,7 @@ size_t test_fill()
 int main()
 {
   plan(NO_PLAN);
-  mkdir(db_file, 0777);
+  mkdir(DB_DIR, 0777);
   cmp_ok((test_open(false, 0, 0)) , "==", 0, "Create and open db file");
   test_close();
   cmp_ok((test_open(true, 1, 10)) , "==", 0, "Create and open named db");
@@ -56,7 +55,13 @@ int main()
          "Read \"foo\".");
   test_close();
   is(meta_value, "bar", "\"bar\" is read.");
-  free(meta_value);
+  free(meta_value); //replace with meta_db.c function.
+  system(RM_DB);
+  mkdir(DB_DIR, 0777);
+  //cmp_ok(test_fill(), "==", 1000, "Put 1000 entries in db");
   cmp_ok(meta_get_keys(&all_keys, &all_values, 1, DB_DIR), "==", 0, "Got all\
+keys from db 1.");
+  test_close();
+
   return 0;
 }
