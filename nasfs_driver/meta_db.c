@@ -26,6 +26,7 @@ void meta_close()
 {
   mdb_close(env, dbi);
   mdb_env_close(env);
+  env = NULL;
 }
 
 int meta_open(const char *file, unsigned long db_id, bool create,
