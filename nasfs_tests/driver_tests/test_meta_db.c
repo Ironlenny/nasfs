@@ -8,6 +8,9 @@
 #define DB_DIR "./meta_db"
 #define RM_DB "rm -rf " DB_DIR
 
+char *meta_value;
+char **all_keys;
+char **all_values;
 
 int test_open(bool create, unsigned long db_id, int max_db)
 {
@@ -35,5 +38,6 @@ int main()
   test_close();
   is(meta_value, "bar", "\"bar\" is read.");
   free(meta_value);
+  cmp_ok(meta_get_keys(&all_keys, &all_values, 1, DB_DIR), "==", 0, "Got all\
   return 0;
 }
