@@ -109,14 +109,14 @@ int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db
   *all_keys = malloc(arr_size);
   *all_values = malloc(arr_size);
   mdb_cursor_get(cursor, &key, &value, MDB_FIRST);
-  *all_keys[0] = strdup(key.mv_data);
-  *all_values[0] = strdup(value.mv_data);
+  (*all_keys)[0] = strdup(key.mv_data);
+  (*all_values)[0] = strdup(value.mv_data);
 
   while (mdb_cursor_get(cursor, &key, &value, MDB_NEXT) == 0)
     {
       assert(count < db_size);
-      *all_keys[count] = strdup(key.mv_data);
-      *all_values[count] = strdup(value.mv_data);
+      (*all_keys)[count] = strdup(key.mv_data);
+      (*all_values)[count] = strdup(value.mv_data);
       count++;
     }
 
