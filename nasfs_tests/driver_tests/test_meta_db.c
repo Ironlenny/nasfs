@@ -22,14 +22,14 @@ void test_close()
   meta_close();
 }
 
-size_t test_fill()
+int test_fill()
 {
   test_open(true, 1, 10);
 
   for(int i = 0; i < 1000; i++)
     {
       char foo[30];
-      sprintf(foo, "%s%d", "foo", i);
+      sprintf(foo, "%d%s", i, "foo");
       meta_put(foo, "bar");
     }
 
@@ -39,17 +39,37 @@ size_t test_fill()
       char *bar;
       sprintf(foo, "%d%s", i, "foo");
       meta_get(foo, &bar);
-      //printf("foo: %s, bar: %s\n", foo, bar);
       if(strncmp(bar, "bar", 3))
         {
           printf("Test failed on index %d\n", i);
           printf("bar is %s\n", bar);
           return 1;
         }
-
     }
 
   return 0;
+}
+
+int test_keys()
+{
+  for(int i = 0; i < 1000; i++)
+    {
+      char foo[30];
+      char *bar;
+      sprintf(foo, "%d%s", i, "foo");
+      if(strncmp(*all_keys[i], foo, 3))
+        {
+          printf("Test failed on index %d\n", i);
+          printf("bar is %s\n", bar);
+          return 1;
+
+      if(strncmp(*all_values[i], "bar", 3))
+        {
+          printf("Test failed on index %d\n", i);
+          printf("bar is %s\n", bar);
+          return 1;
+        }
+    }
 }
 
 int main()
