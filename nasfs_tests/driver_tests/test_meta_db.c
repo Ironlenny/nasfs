@@ -24,21 +24,32 @@ void test_close()
 
 size_t test_fill()
 {
-  int key = 0;
-  int value = 0;
   test_open(true, 1, 10);
 
   for(int i = 0; i < 1000; i++)
     {
       char foo[30];
-      char bar[30];
-      sprintf(foo, "%s%d", "foo", key++);
-      sprintf(bar, "%s%d", "bar", value++);
-      meta_put(foo, bar);
+      sprintf(foo, "%s%d", "foo", i);
+      meta_put(foo, "bar");
     }
 
-  //  return dbg_get_db_size();
-  return 0
+  for(int i = 0; i < 1000; i++)
+    {
+      char foo[30];
+      char *bar;
+      sprintf(foo, "%d%s", i, "foo");
+      meta_get(foo, &bar);
+      //printf("foo: %s, bar: %s\n", foo, bar);
+      if(strncmp(bar, "bar", 3))
+        {
+          printf("Test failed on index %d\n", i);
+          printf("bar is %s\n", bar);
+          return 1;
+        }
+
+    }
+
+  return 0;
 }
 
 int main()
@@ -58,7 +69,7 @@ int main()
   free(meta_value); //replace with meta_db.c function.
   system(RM_DB);
   mkdir(DB_DIR, 0777);
-  //cmp_ok(test_fill(), "==", 1000, "Put 1000 entries in db");
+  cmp_ok(test_fill(), "==", 0, "Put 1000 entries in db");
   cmp_ok(meta_get_keys(&all_keys, &all_values, 1, DB_DIR), "==", 0, "Got all\
 keys from db 1.");
   test_close();
