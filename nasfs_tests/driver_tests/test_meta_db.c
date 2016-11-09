@@ -29,7 +29,7 @@ int test_fill()
   for(int i = 0; i < 1000; i++)
     {
       char foo[30];
-      sprintf(foo, "%d%s", i, "foo");
+      sprintf(foo, "%03d%s", i, "foo");
       meta_put(foo, "bar");
     }
 
@@ -37,7 +37,7 @@ int test_fill()
     {
       char foo[30];
       char *bar;
-      sprintf(foo, "%d%s", i, "foo");
+      sprintf(foo, "%03d%s", i, "foo");
       meta_get(foo, &bar);
       if(strncmp(bar, "bar", 3))
         {
@@ -52,24 +52,26 @@ int test_fill()
 
 int test_keys()
 {
+  meta_get_keys(&all_keys, &all_values, 1, DB_DIR);
+
   for(int i = 0; i < 1000; i++)
     {
       char foo[30];
-      char *bar;
-      sprintf(foo, "%d%s", i, "foo");
-      if(strncmp(*all_keys[i], foo, 3))
-        {
-          printf("Test failed on index %d\n", i);
-          printf("bar is %s\n", bar);
-          return 1;
+      sprintf(foo, "%03d%s", i, "foo");
 
-      if(strncmp(*all_values[i], "bar", 3))
+      if(strncmp(all_keys[i], foo, 3))
         {
           printf("Test failed on index %d\n", i);
-          printf("bar is %s\n", bar);
+          return 1;
+        }
+
+      if(strncmp(all_values[i], "bar", 3))
+        {
+          printf("Test failed on index %d\n", i);
           return 1;
         }
     }
+  return 0;
 }
 
 int main()
@@ -90,8 +92,7 @@ int main()
   system(RM_DB);
   mkdir(DB_DIR, 0777);
   cmp_ok(test_fill(), "==", 0, "Put 1000 entries in db");
-  cmp_ok(meta_get_keys(&all_keys, &all_values, 1, DB_DIR), "==", 0, "Got all\
-keys from db 1.");
+  cmp_ok(test_keys(), "==", 0, "Got all keys from db 1.");
   test_close();
 
   return 0;
