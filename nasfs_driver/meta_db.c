@@ -125,3 +125,16 @@ int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db
 
   return 0;
 }
+
+void meta_free(char *str, char ***arr_str)
+{
+  if (str != NULL)
+    {
+      free(str);
+    }
+
+  if (arr_str != NULL)
+    {
+      
+    }
+}
