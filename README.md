@@ -15,5 +15,5 @@ ones NAS with drives of increasing capacity, and the filesystem can rearrange
 data in the background. No extra steps required.
 
 NASFS is currently in development, and at this point the filesystem logic has
-not been implemented. Basic mirroring and standared filesystem operations I hope
+not been implemented. Basic mirroring and standard filesystem operations I hope
 to have implemented by January.
