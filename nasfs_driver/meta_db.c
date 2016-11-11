@@ -102,7 +102,7 @@ int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db
   error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
   error_rpt(mdb_stat(txn, dbi, &stat));
   size_t db_size = stat.ms_entries;
-  int arr_size = db_size * sizeof(char *);
+  int arr_size = (db_size + 1) * sizeof(char *);
   size_t count = 1;
 
   mdb_cursor_open(txn, dbi, &cursor);
@@ -120,13 +120,16 @@ int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db
       count++;
     }
 
+  (*all_keys)[db_size] = NULL;
+  (*all_values)[db_size] = NULL;
+
   mdb_cursor_close(cursor);
   mdb_txn_abort(txn);
 
   return 0;
 }
 
-void meta_free(char *str, char ***arr_str)
+void meta_free(char *str, char **arr_str)
 {
   if (str != NULL)
     {
@@ -135,6 +138,13 @@ void meta_free(char *str, char ***arr_str)
 
   if (arr_str != NULL)
     {
+      int count = 0;
       
+      while (arr_str[count] != NULL)
+        {
+          free(arr_str[count++]);
+        }
+
+      free(arr_str);
     }
 }
