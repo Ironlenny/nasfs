@@ -7,182 +7,183 @@
 bson_reader_t *reader;
 bson_t *doc;
 
-int nas_init(char *super_path)
+static void *nas_init(struct fuse_conn_info *conn)
+{
+  (void) conn;
+  return NULL;
+}
+
+static int nas_getattr()
 {
   return -ENOSYS;
 }
 
-int nas_getattr()
+static int nas_access()
 {
   return -ENOSYS;
 }
 
-int nas_access()
+static int nas_readlink()
 {
   return -ENOSYS;
 }
 
-int nas_readlink()
+static int nas_opendir()
 {
   return -ENOSYS;
 }
 
-int nas_opendir()
+static int nas_readdir()
 {
   return -ENOSYS;
 }
 
-int nas_readdir()
+static int nas_releasedir()
 {
   return -ENOSYS;
 }
 
-int nas_releasedir()
+static int nas_mknod()
 {
   return -ENOSYS;
 }
 
-int nas_mknod()
+static int nas_mkdir()
 {
   return -ENOSYS;
 }
 
-int nas_mkdir()
+static int nas_symlink()
 {
   return -ENOSYS;
 }
 
-int nas_symlink()
+static int nas_unlink()
 {
   return -ENOSYS;
 }
 
-int nas_unlink()
+static int nas_rmdir()
 {
   return -ENOSYS;
 }
 
-int nas_rmdir()
+static int nas_rename()
 {
   return -ENOSYS;
 }
 
-int nas_rename()
+static int nas_link()
 {
   return -ENOSYS;
 }
 
-int nas_link()
+static int nas_chmod()
 {
   return -ENOSYS;
 }
 
-int nas_chmod()
+static int nas_chown()
 {
   return -ENOSYS;
 }
 
-int nas_chown()
+static int nas_truncate()
 {
   return -ENOSYS;
 }
 
-int nas_truncate()
+static int nas_utimens()
 {
   return -ENOSYS;
 }
 
-int nas_utimens()
+static int nas_create()
 {
   return -ENOSYS;
 }
 
-int nas_create()
+static int nas_open()
 {
   return -ENOSYS;
 }
 
-int nas_open()
+static int nas_read()
 {
   return -ENOSYS;
 }
 
-int nas_read()
+static int nas_read_buf()
 {
   return -ENOSYS;
 }
 
-int nas_read_buf()
+static int nas_write()
 {
   return -ENOSYS;
 }
 
-int nas_write()
+static int nas_write_buf()
 {
   return -ENOSYS;
 }
 
-int nas_write_buf()
+static int nas_statfs()
 {
   return -ENOSYS;
 }
 
-int nas_statfs()
+static int nas_flush()
 {
   return -ENOSYS;
 }
 
-int nas_flush()
+static int nas_release()
 {
   return -ENOSYS;
 }
 
-int nas_release()
+static int nas_fsync()
 {
   return -ENOSYS;
 }
 
-int nas_fsync()
+static int nas_fallocate()
 {
   return -ENOSYS;
 }
 
-int nas_fallocate()
+static int nas_setxattr()
 {
   return -ENOSYS;
 }
 
-int nas_setxattr()
+static int nas_getxattr()
 {
   return -ENOSYS;
 }
 
-int nas_getxattr()
+static int nas_listxattr()
 {
   return -ENOSYS;
 }
 
-int nas_listxattr()
+static int nas_removexattr()
 {
   return -ENOSYS;
 }
 
-int nas_removexattr()
+static int nas_lock()
 {
   return -ENOSYS;
 }
 
-int nas_lock()
+static int nas_flock()
 {
   return -ENOSYS;
 }
 
-int nas_flock()
-{
-  return -ENOSYS;
-}
-
-static struct fuse_operations nas_oper = {
+/* static struct fuse_operations nas_oper = {
 	.init           = nas_init,
 	.getattr	= nas_getattr,
 	.access		= nas_access,
@@ -225,5 +226,5 @@ static struct fuse_operations nas_oper = {
 #ifdef HAVE_LIBULOCKMGR
 	.lock		= nas_lock,
 #endif
-	.flock		= nas_flock,
-};
+.flock		= nas_flock,
+};*/

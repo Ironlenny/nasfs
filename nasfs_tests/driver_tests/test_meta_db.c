@@ -76,7 +76,8 @@ int test_keys()
 
 int main()
 {
-  plan(NO_PLAN);
+  printf("meta_db.c tests:\n");
+  plan(8);
   mkdir(DB_DIR, 0777);
   cmp_ok((test_open(false, 0, 0)) , "==", 0, "Create and open db file");
   test_close();
@@ -88,11 +89,13 @@ int main()
          "Read \"foo\".");
   test_close();
   is(meta_value, "bar", "\"bar\" is read.");
-  free(meta_value); //replace with meta_db.c function.
+  meta_free(meta_value, NULL);
   system(RM_DB);
   mkdir(DB_DIR, 0777);
   cmp_ok(test_fill(), "==", 0, "Put 1000 entries in db");
   cmp_ok(test_keys(), "==", 0, "Got all keys from db 1.");
+  meta_free(NULL, all_keys);
+  meta_free(NULL, all_values);
   test_close();
 
   return 0;
