@@ -1,8 +1,8 @@
+#define FUSE_USE_VERSION 26
+
 #include <fuse.h>
 #include <errno.h>
 #include <bson.h>
-
-#define FUSE_USE_VERSION 30
 
 bson_reader_t *reader;
 bson_t *doc;
@@ -183,7 +183,7 @@ static int nas_flock()
   return -ENOSYS;
 }
 
-/* static struct fuse_operations nas_oper = {
+ static struct fuse_operations nas_oper = {
 	.init           = nas_init,
 	.getattr	= nas_getattr,
 	.access		= nas_access,
@@ -227,4 +227,4 @@ static int nas_flock()
 	.lock		= nas_lock,
 #endif
 .flock		= nas_flock,
-};*/
+};
