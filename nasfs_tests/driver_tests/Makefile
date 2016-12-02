@@ -1,17 +1,19 @@
 bin=../../bin
 bson_loc=$(shell pkg-config --cflags --libs libbson-1.0)
 
-test: test_fs test_meta
-	if [ -e $(bin)/test_all.sh ]; then rm $(bin)/test_all.sh; fi;
-	cp test_all.sh $(bin)/
+tests: $(bin)/test_fs $(bin)/test_meta $(bin)/test_all.sh
 
 clean:
-	if [ -e $(bin) ]; rm -rf $(bin); fi;
+	rm -rf $(bin)
 
-test_meta: test_meta_db.c ../../nasfs_driver/meta_db.c
+$(bin)/test_meta: test_meta_db.c ../../nasfs_driver/meta_db.c
+	mkdir -p $(@D)
+	clang -Wextra -W -Wall test_meta_db.c ../../nasfs_driver/meta_db.c -l tap -l lmdb -g -o $@
 
-	clang -Wextra -W -Wall test_meta_db.c ../../nasfs_driver/meta_db.c -l tap -l lmdb -g -o $(bin)/test_meta
+$(bin)/test_fs: test_nasfs.c ../../nasfs_driver/nasfs.c ../../nasfs_driver/meta_db.c
+	mkdir -p $(@D)
+	clang -D_FILE_OFFSET_BITS=64 -Wextra -W -Wall test_nasfs.c ../../nasfs_driver/meta_db.c ../../nasfs_driver/nasfs.c $(bson_loc) -l tap -l lmdb -g -Wno-error=unused-function -Wno-error=macro-redefined -o $@
 
-test_fs: test_nasfs.c ../../nasfs_driver/nasfs.c
-	clang -D_FILE_OFFSET_BITS=64 -Wextra -W -Wall test_nasfs.c ../../nasfs_driver/nasfs.c $(bson_loc) -l tap -l lmdb -g -o $(bin)/test_fs -Wno-error=unused-function -Wno-error=macro-redefined
-
+$(bin)/test_all.sh: test_all.sh
+	cp $< $(bin)/
+	chmod +x $(bin)/$<
