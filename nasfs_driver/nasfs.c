@@ -3,9 +3,33 @@
 #include <fuse.h>
 #include <errno.h>
 #include <bson.h>
+#include "meta_db.h"
+#include "stdbool.h"
 
-bson_reader_t *reader;
-bson_t *doc;
+static const bson_t *super_block;
+static char **vol;
+static int max_dir = 0;
+static int raid_lv = 0;
+static bson_error_t bson_error;
+static bson_iter_t iter;
+
+static int nas_initalize(const char *path)
+{
+bson_reader_t *reader = bson_reader_new_from_file(path, &bson_error);
+super_block = bson_reader_read(reader, NULL);
+bson_iter_init(&iter, super_block);
+
+bson_iter_find(&iter, "max_dir");
+max_dir = bson_iter_int32(&iter);
+
+bson_iter_find(&iter, "raid_lv");
+raid_lv = bson_iter_int32(&iter);
+
+bson_iter_find(&iter, "vol");
+*vol = bson_iter_array(&iter);
+
+return 0;
+}
 
 static void *nas_init(struct fuse_conn_info *conn)
 {
