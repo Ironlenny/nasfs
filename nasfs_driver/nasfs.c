@@ -16,6 +16,7 @@ static bson_iter_t *sub_iter;
 
 static int nas_initalize(const char *path)
 {
+  int error = 0;
   bson_reader_t *reader = bson_reader_new_from_file(path, &bson_error);
   if (!reader) {
     fprintf (stderr, "ERROR: %d.%d: %s\n",
@@ -24,23 +25,47 @@ static int nas_initalize(const char *path)
   super_block = bson_reader_read(reader, NULL);
   bson_iter_init(&iter, super_block);
 
-  bson_iter_find(&iter, "max_dir");
-  max_dir = bson_iter_int32(&iter);
+  if (bson_iter_find(&iter, "max_dir"))
+    {
+      max_dir = bson_iter_int32(&iter);
+    }
+  else
+    {
+      error = -1;
+      bson_reader_destroy(reader);
+    }
 
   if (bson_iter_find(&iter, "raid_lv"))
     {
       raid_lv = bson_iter_int32(&iter);
     }
+  else
+    {
+      error = -1;
+      bson_reader_destroy(reader);
+    }
+
   if(bson_iter_find(&iter, "vol"))
     {
       int count = 0;
       bson_iter_recurse(&iter, sub_iter);
       while(bson_iter_next(sub_iter) == true)
         {
-          vol[count++] = bson_iter_utf8(sub_iter, NULL);
+          if (bson_iter_find_descendant(&iter, "vol.0", sub_iter))
+            {
+              vol[count++] = bson_iter_utf8 (sub_iter, NULL);
+            }
         }
     }
-return 0;
+  else
+    {
+      error = -1;
+      bson_reader_destroy(reader);
+    }
+
+  bson_reader_destroy(reader);
+
+  return error;
 }
 
 static void *nas_init(struct fuse_conn_info *conn)
