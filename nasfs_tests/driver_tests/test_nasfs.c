@@ -7,7 +7,7 @@ static char super_path[] = "./super_block";
 
 int test_initalize()
 {
-  if (nas_initalize(super_path))
+  if (nas_initalize(super_path) == 0)
     {
       return 1;
     }
@@ -75,11 +75,11 @@ int main(int argc, const char *argv[])
 
   printf("nasfs.c tests:\n");
   plan(NO_PLAN);
-  ok(test_initalize());
-  cmp_ok(max_dir, "==", 1);
-  cmp_ok(raid_lv, "==", 1);
-  is(vol[0], "==", "./a");
-  is(vol[1], "==", "./b");
+  ok(test_initalize(), "File system initialized");
+  cmp_ok(max_dir, "==", 65000, "max_dir is set correctly");
+  cmp_ok(raid_lv, "==", 1, "raid_lv is set correctly");
+  is(vol[0], "==", "./a", "vol[0] is set correctly");
+  is(vol[1], "==", "./b", "vol[1] is set correctly");
   //  ok(test_init());
   ok(test_create());
   ok(test_open());
