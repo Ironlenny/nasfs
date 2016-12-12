@@ -94,7 +94,7 @@ int meta_put(char *meta_key, char *meta_input)
   return error_rpt(mdb_txn_commit(txn));
 }
 
-int meta_get_keys(char ***all_keys, char ***all_values, int db_id, char *meta_db)
+int meta_get_keys(char ***all_keys, char ***all_values, unsigned long db_id, const char *meta_db)
 {
   MDB_cursor *cursor;
   MDB_stat stat;
@@ -139,7 +139,7 @@ void meta_free(char *str, char **arr_str)
   if (arr_str != NULL)
     {
       int count = 0;
-      
+
       while (arr_str[count] != NULL)
         {
           free(arr_str[count++]);
