@@ -11,7 +11,7 @@ static MDB_env *env = NULL;
 static MDB_dbi dbi;
 static MDB_val key, value;
 
-int error_rpt( int rc )
+static int error_rpt( int rc )
 {
   if(rc)
     {
