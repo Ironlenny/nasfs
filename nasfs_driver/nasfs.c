@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-static const bson_t *super_block;
+
 static const char *vol[10];
 static int max_dir = 0;
 static int raid_lv = 0;
@@ -15,11 +15,12 @@ static bson_error_t bson_error;
 static bson_iter_t iter;
 static bson_iter_t sub_iter;
 static unsigned long db_count = 1;
-static unsigned long db_next_id = db_count;
-static char db_path[] = "./meta_db"
+static unsigned long db_next_id = 1;
+static char db_path[] = "./meta_db";
 
 static int nas_initalize(const char *path)
 {
+  static const bson_t *super_block;
   int error = 0;
   bson_reader_t *reader = bson_reader_new_from_file(path, &bson_error);
   if (!reader) {
@@ -83,11 +84,40 @@ static int nas_releasedir()
   return -ENOSYS;
 }
 
-static int nas_mkdir(const char *path, mode_t mode)
+static int nas_mkdir(char *path, mode_t mode)
 {
-  char *tmp[100];
+  char *lst_tmp[100];
+  const char delim[] = "/";
+  char *token = strtok (path, delim);
+  int count = 0;
+  char *return_val;
+  bson_t *record;
 
-  while ()
+  while (token != NULL)
+    {
+      lst_tmp[count] = token;
+
+      token = strtok (NULL, delim);
+
+      if(token != NULL)
+        {
+          count++;
+        }
+    }
+
+  if ((count == 0) && (token != NULL))
+    {
+      char *id_tmp = malloc(sizeof(unsigned long));
+      snprintf(id_tmp, sizeof(unsigned long), "%lu", db_next_id);
+      meta_open(db_path, 0, false, max_dir);
+      meta_put(lst_tmp[0], id_tmp);
+      meta_close();
+      meta_open(db_path, db_next_id, true, max_dir);
+      record = BCON_NEW("contains", "[", ".", "..", "]", "perm", BCON_INT32(mode),
+                        "dir", BCON_BOOL(true));
+      meta_put("self", record);
+      meta_close();
+    }
 }
 
 static int nas_rmdir()
