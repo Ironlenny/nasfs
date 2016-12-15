@@ -18,6 +18,25 @@ static unsigned long db_count = 1;
 static unsigned long db_next_id = 1;
 static char db_path[] = "./meta_db";
 
+static unsigned long get_parent_id_(int index, char *lst_tmp[],
+                                    unsigned long in_id)
+{
+  char *tmp = NULL;
+  unsigned long id = 0;
+    meta_open(db_path, in_id, false, max_dir);
+  if (meta_get(lst_tmp[index], &tmp) == 0)
+    {
+      id = strtoul(tmp, NULL, 10);
+    }
+
+  if (id != 0)
+    {
+      get_parent_id_(index++, lst_tmp, id);
+    }
+
+  return id ;
+}
+
 static int nas_initalize(const char *path)
 {
   static const bson_t *super_block;
