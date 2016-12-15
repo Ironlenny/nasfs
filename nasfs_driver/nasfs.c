@@ -103,14 +103,21 @@ static int nas_releasedir()
   return -ENOSYS;
 }
 
-static int nas_mkdir(char *path, mode_t mode)
+static int nas_mkdir(const char *path, mode_t mode)
 {
   char *lst_tmp[100];
   const char delim[] = "/";
-  char *token = strtok (path, delim);
-  int count = 0;
-  char *return_val;
+  int path_len = 0;
+    int count = 0;
   bson_t *record;
+  char *rec_tmp = NULL;
+  char *id_tmp = malloc(sizeof(unsigned long));
+  unsigned long parent_id = 0;
+  path_len = strlen(path);
+  char tmp[path_len];
+  char *token = strtok (tmp, delim);
+
+  strncpy(tmp, path, path_len);
 
   while (token != NULL)
     {
@@ -124,19 +131,21 @@ static int nas_mkdir(char *path, mode_t mode)
         }
     }
 
-  if ((count == 0) && (token != NULL))
-    {
-      char *id_tmp = malloc(sizeof(unsigned long));
-      snprintf(id_tmp, sizeof(unsigned long), "%lu", db_next_id);
-      meta_open(db_path, 0, false, max_dir);
-      meta_put(lst_tmp[0], id_tmp);
-      meta_close();
-      meta_open(db_path, db_next_id, true, max_dir);
-      record = BCON_NEW("contains", "[", ".", "..", "]", "perm", BCON_INT32(mode),
-                        "dir", BCON_BOOL(true));
-      meta_put("self", record);
-      meta_close();
-    }
+  parent_id = get_parent_id_(parent_id, lst_tmp, parent_id);
+
+  snprintf(id_tmp, sizeof(unsigned long), "%lu", db_next_id);
+  meta_open(db_path, parent_id, false, max_dir);
+  meta_put(lst_tmp[parent_id], id_tmp);
+  meta_close();
+  meta_open(db_path, db_next_id, true, max_dir);
+  record = BCON_NEW("contains", "[", ".", "..", "]", "perm", BCON_INT32(mode),
+                    "dir", BCON_BOOL(true));
+  rec_tmp = bson_as_json(record, NULL);
+  meta_put("self", rec_tmp);
+  meta_close();
+  db_next_id = ++db_count;
+
+  return 0;
 }
 
 static int nas_rmdir()
