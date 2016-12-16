@@ -76,9 +76,18 @@ int meta_get( char *meta_key, char **meta_value)
   error_rpt(mdb_txn_begin(env, NULL, 0, &txn));
   rc = mdb_get(txn, dbi, &key, &value);
   mdb_txn_abort(txn);
-  *meta_value = strdup(value.mv_data);
 
-  return error_rpt(rc);
+  if (value.mv_data != NULL)
+    {
+      *meta_value = strdup(value.mv_data);
+      rc = 0;
+    }
+  else
+    {
+      rc = -1;
+    }
+
+  return rc;
 }
 
 int meta_put(char *meta_key, char *meta_input)
