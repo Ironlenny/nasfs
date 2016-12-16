@@ -7,6 +7,7 @@
 
 static char super_path[] = "./super_block";
 static char *meta_return;
+static char meta_db[] = "./meta_db";
 
 int test_initalize()
 {
@@ -47,18 +48,22 @@ int test_mkdir()
 {
   int result = 0;
   unsigned long db_id = 0;
-  if((nas_mkdir("/foo", 0777) == 0) && (meta_get("/foo", &meta_return) == 0)) 
+  if(nas_mkdir("/foo", 0777) == 0)
     {
       result = 1;
     }
 
+  if ((meta_open(meta_db, 0, false, max_dir) && (meta_get("/foo", &meta_return) == 0)))
+    {
+      result = 1;
+    }
 
   if (meta_return != NULL)
     {
       db_id = strtoul (meta_return, NULL, 10);
     }
 
-  if ((db_id != 0) && (meta_open("./meta_db", db_id, true, max_dir)))
+  if ((db_id != 0) && (meta_open(meta_db, db_id, false, max_dir) == 0))
     {
       result = 1;
     }
@@ -101,8 +106,7 @@ int main(int argc, const char *argv[])
   ok(test_open());
   ok(test_write());
   ok(test_release());
-  ok(test_mkdir());
-  ok(test_opendir());
+  ok(test_mkdir(), "Made new directory");
   ok(test_readdir());
   ok(test_releasedir());
   return 0;

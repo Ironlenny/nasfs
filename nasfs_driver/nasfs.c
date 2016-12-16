@@ -29,7 +29,7 @@ static unsigned long get_parent_id_(int index, char *lst_tmp[],
       id = strtoul(tmp, NULL, 10);
     }
 
-  if (id != 0)
+  if (id > 0)
     {
       get_parent_id_(index++, lst_tmp, id);
     }
@@ -108,16 +108,17 @@ static int nas_mkdir(const char *path, mode_t mode)
   char *lst_tmp[100];
   const char delim[] = "/";
   int path_len = 0;
-    int count = 0;
+  int count = 0;
   bson_t *record;
   char *rec_tmp = NULL;
   char *id_tmp = malloc(sizeof(unsigned long));
   unsigned long parent_id = 0;
   path_len = strlen(path);
   char tmp[path_len];
-  char *token = strtok (tmp, delim);
 
   strncpy(tmp, path, path_len);
+
+  char *token = strtok (tmp, delim);
 
   while (token != NULL)
     {
