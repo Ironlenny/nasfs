@@ -134,7 +134,7 @@ static int nas_mkdir(const char *path, mode_t mode)
   Path new_dir;
   new_dir.len = strlen(path);
 
-  strncpy(new_dir.str, path, sizeof(path));
+  strncpy(new_dir.str, path, new_dir.len * sizeof(char));
   tokenize(&new_dir);
 
   parent_id = get_parent_id_(new_dir.len, new_dir.str, parent_id);
