@@ -17,24 +17,46 @@ static bson_iter_t sub_iter;
 static unsigned long db_count = 1;
 static unsigned long db_next_id = 1;
 static char db_path[] = "./meta_db";
+typedef struct Path
+{
+  int len;
+  char *str;
+  char *tail;
+} Path;
 
-static unsigned long get_parent_id_(int index, char *lst_tmp[],
-                                    unsigned long in_id)
+  static unsigned long get_parent_id_(int path_len, char *path,
+                                      unsigned long in_id)
 {
   char *tmp = NULL;
   unsigned long id = 0;
+  int tmp_len = 0;
     meta_open(db_path, in_id, false, max_dir);
-  if (meta_get(lst_tmp[index], &tmp) == 0)
+  if (meta_get(path, &tmp) == 0)
     {
       id = strtoul(tmp, NULL, 10);
     }
 
-  if (id > 0)
+  if (path_len > 0)
     {
-      get_parent_id_(index++, lst_tmp, id);
+      tmp_len = strlen(path);
+      path_len = tmp_len - strlen(path);
+      path = path + tmp_len + 1;
+      get_parent_id_(path_len, path, id);
     }
 
   return id ;
+}
+
+static void tokenize(Path *path)
+{
+  const char delim[] = "/";
+  char *token = strtok (path->str, delim);
+
+  while (token != NULL)
+    {
+      path->tail = token;
+      token = strtok (NULL, delim);
+    }
 }
 
 static int nas_initalize(const char *path)
@@ -88,9 +110,9 @@ static int nas_initalize(const char *path)
   return error;
 }
 
-static int nas_opendir()
+static int nas_opendir(const char *path, struct fuse_file_info *file_handle)
 {
-  return -ENOSYS;
+  return 0;
 }
 
 static int nas_readdir()
@@ -105,38 +127,21 @@ static int nas_releasedir()
 
 static int nas_mkdir(const char *path, mode_t mode)
 {
-  char *lst_tmp[100];
-  const char delim[] = "/";
-  int path_len = 0;
-  int count = 0;
   bson_t *record;
   char *rec_tmp = NULL;
   char *id_tmp = malloc(sizeof(unsigned long));
   unsigned long parent_id = 0;
-  path_len = strlen(path);
-  char tmp[path_len];
+  Path new_dir;
+  new_dir.len = strlen(path);
 
-  strncpy(tmp, path, path_len);
+  strncpy(new_dir.str, path, sizeof(path));
+  tokenize(&new_dir);
 
-  char *token = strtok (tmp, delim);
-
-  while (token != NULL)
-    {
-      lst_tmp[count] = token;
-
-      token = strtok (NULL, delim);
-
-      if(token != NULL)
-        {
-          count++;
-        }
-    }
-
-  parent_id = get_parent_id_(parent_id, lst_tmp, parent_id);
+  parent_id = get_parent_id_(new_dir.len, new_dir.str, parent_id);
 
   snprintf(id_tmp, sizeof(unsigned long), "%lu", db_next_id);
   meta_open(db_path, parent_id, false, max_dir);
-  meta_put(lst_tmp[parent_id], id_tmp);
+  meta_put(new_dir.tail, id_tmp);
   meta_close();
   meta_open(db_path, db_next_id, true, max_dir);
   record = BCON_NEW("contains", "[", ".", "..", "]", "perm", BCON_INT32(mode),
@@ -145,6 +150,9 @@ static int nas_mkdir(const char *path, mode_t mode)
   meta_put("self", rec_tmp);
   meta_close();
   db_next_id = ++db_count;
+
+  free(id_tmp);
+  bson_destroy(record);
 
   return 0;
 }
