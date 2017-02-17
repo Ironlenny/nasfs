@@ -102,12 +102,13 @@ int main(int argc, const char *argv[])
   cmp_ok(raid_lv, "==", 1, "raid_lv is set correctly");
   is(vol[0], "./a", "vol[0] is set correctly");
   is(vol[1], "./b", "vol[1] is set correctly");
+  ok(test_mkdir(), "Made new directory");
+  ok(test_opendir(), "Opened directory");
+  ok(test_readdir());
+  ok(test_releasedir());
   ok(test_create());
   ok(test_open());
   ok(test_write());
   ok(test_release());
-  ok(test_mkdir(), "Made new directory");
-  ok(test_readdir());
-  ok(test_releasedir());
   return 0;
 }
