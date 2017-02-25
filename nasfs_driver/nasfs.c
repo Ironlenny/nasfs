@@ -2,21 +2,12 @@
 
 #include <fuse.h>
 #include <errno.h>
-#include <bson.h>
-#include "meta_db.h"
 #include <stdbool.h>
 #include <string.h>
+#include "mpack.h"
 
-
+static mpack_reader_t reader;
 static const char *vol[10];
-static int max_dir = 0;
-static int raid_lv = 0;
-static bson_error_t bson_error;
-static bson_iter_t iter;
-static bson_iter_t sub_iter;
-static unsigned long db_count = 1;
-static unsigned long db_next_id = 1;
-static char db_path[] = "./meta_db";
 typedef struct Path
 {
   int len;
@@ -24,27 +15,43 @@ typedef struct Path
   char *tail;
 } Path;
 
-  static unsigned long get_parent_id_(int path_len, char *path,
-                                      unsigned long in_id)
+/*   static unsigned long get_parent_id_(int path_len, char *path, */
+/*                                       unsigned long in_id) */
+/* { */
+/*   char *tmp = NULL; */
+/*   unsigned long id = 0; */
+/*   int tmp_len = 0; */
+/*     meta_open(db_path, in_id, false, max_dir); */
+/*   if (meta_get(path, &tmp) == 0) */
+/*     { */
+/*       id = strtoul(tmp, NULL, 10); */
+/*     } */
+
+/*   if (path_len > 0) */
+/*     { */
+/*       tmp_len = strlen(path); */
+/*       path_len = tmp_len - strlen(path); */
+/*       path = path + tmp_len + 1; */
+/*       get_parent_id_(path_len, path, id); */
+/*     } */
+
+/*   return id ; */
+/* } */
+
+/* Schema: */
+/* [ */
+/*  Field 1: 'contains' array of strings */
+/*  Field 2: 'uid' int */
+/*  Field 3: 'gid' int */
+/*  Field 4: 'permisions' int */
+/*  Field 5: 'atime' int */
+/*  Field 6: 'directory' bool */
+/*  ] */
+static void mp_validate(mpack_reader_t *reader, char *path)
 {
-  char *tmp = NULL;
-  unsigned long id = 0;
-  int tmp_len = 0;
-    meta_open(db_path, in_id, false, max_dir);
-  if (meta_get(path, &tmp) == 0)
-    {
-      id = strtoul(tmp, NULL, 10);
-    }
 
-  if (path_len > 0)
-    {
-      tmp_len = strlen(path);
-      path_len = tmp_len - strlen(path);
-      path = path + tmp_len + 1;
-      get_parent_id_(path_len, path, id);
-    }
+  reader_init_file(reader, path);
 
-  return id ;
 }
 
 static void tokenize(Path *path)

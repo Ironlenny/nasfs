@@ -6,13 +6,25 @@ import msgpack
 class FSMan():
 
     def __init__(self):
-        self._super_block = 'super_block'
+        self._super_block = 'super_block.mp'
+        self._meta_root = 'root.mp'
 
     def create_fs(self, vol, raidLv, uid, gid, perm):
-        root_rec = {'contains': ['.', '..'], 'uid': uid, 'gid': gid,\
-                     'perm': perm, 'atime': None, 'dir': True}
+        # Schema:
+        # [
+        # Field 1: 'contains' array of strings
+        # Field 2: 'uid' int
+        # Field 3: 'gid' int
+        # Field 4: 'permisions' int
+        # Field 5: 'atime' int
+        # Field 6: 'directory' bool
+        # ]
+        root_rec = [['.', '..'], uid, gid, perm, None, True]
         file = open(self._super_block, 'bx')
         file.write(msgpack.dumps({"vol":vol, "raid_lv":raidLv}))
+        file.close()
+        file = open(self._meta_root, 'bx')
+        file.write(msgpack.dumps(root_rec))
         file.close()
 
     def add_vol(self, mount, vol):

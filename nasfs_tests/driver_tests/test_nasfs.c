@@ -48,6 +48,12 @@ int test_mkdir()
 {
   int result = 0;
   unsigned long db_id = 0;
+
+  if ( 1 != 0)
+    {
+      result = 1;
+    }
+
   if(nas_mkdir("/foo", 0777) == 0)
     {
       result = 1;
