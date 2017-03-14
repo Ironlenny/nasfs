@@ -3,7 +3,7 @@
 #include <fuse.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <string.h>
+#inlcude "sds.h"
 #include "mpack.h"
 
 static mpack_reader_t reader;
@@ -40,12 +40,12 @@ typedef struct Path
 
 /* Schema: */
 /* [ */
-/*  Field 1: 'contains' array of strings */
-/*  Field 2: 'uid' int */
-/*  Field 3: 'gid' int */
-/*  Field 4: 'permisions' int */
-/*  Field 5: 'atime' int */
-/*  Field 6: 'directory' bool */
+/*  Field 1: 'directory' bool */
+/*  Field 2: 'uid' int64 */
+/*  Field 3: 'gid' int64 */
+/*  Field 4: 'permisions' int8 */
+/*  Field 5: 'atime' int64 */
+/*  Field 6: 'contains' array of strings */
 /*  ] */
 static void mp_validate(mpack_reader_t *reader, char *path)
 {
@@ -54,17 +54,17 @@ static void mp_validate(mpack_reader_t *reader, char *path)
 
 }
 
-static void tokenize(Path *path)
-{
-  const char delim[] = "/";
-  char *token = strtok (path->str, delim);
+/* static void tokenize(Path *path) */
+/* { */
+/*   const char delim[] = "/"; */
+/*   char *token = strtok (path->str, delim); */
 
-  while (token != NULL)
-    {
-      path->tail = token;
-      token = strtok (NULL, delim);
-    }
-}
+/*   while (token != NULL) */
+/*     { */
+/*       path->tail = token; */
+/*       token = strtok (NULL, delim); */
+/*     } */
+/* } */
 
 static int nas_initalize(const char *path)
 {
