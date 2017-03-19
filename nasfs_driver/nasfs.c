@@ -5,8 +5,10 @@
 #include <stdbool.h>
 #inlcude "sds.h"
 #include "mpack.h"
+#inlcude <openssl/sha.h>
 
 static mpack_reader_t reader;
+static sds inode_name = sdsempty();
 static const char *vol[10];
 typedef struct Path
 {
@@ -40,31 +42,41 @@ typedef struct Path
 
 /* Schema: */
 /* [ */
-/*  Field 1: 'directory' bool */
-/*  Field 2: 'uid' int64 */
-/*  Field 3: 'gid' int64 */
-/*  Field 4: 'permisions' int8 */
-/*  Field 5: 'atime' int64 */
-/*  Field 6: 'contains' array of strings */
+/*  Field 1: 'name' string 256 characters */
+/*  Field 2: 'directory' bool */
+/*  Field 3: 'uid' int64 */
+/*  Field 4: 'gid' int64 */
+/*  Field 5: 'permisions' int8 */
+/*  Field 6: 'atime' int64 */
+/*  Field 7: 'dir size' int32 */
+/*  Field 7: 'contains' array of strings */
 /*  ] */
-static void mp_validate(mpack_reader_t *reader, char *path)
+static void mp_load(char *path)
 {
 
-  reader_init_file(reader, path);
+  sdsgrowzero(inode_name, 256 * sizeof(char));
+  int array_size = 7;
+  hash_size = 160;
+  reader_init_file(&reader, path);
+  mpack_expect_array_match(&reader, array_size);
+  inode_name = mpack_expect_cstr(&reader, sizeof(inode_name));
+  int64 uid = mpack_expect_i64(&reader);
+  int64 gid = mpack_expect_i64(&reader);
+  int8 permisions = mpack_expect_i8(&reader);
+  int64 atime = mpack_expect_i64(&reader);
+
+  int32 dir_size = mpack_expect_i32(&reader);
+  sds contents_array[dir_size * (hash_size)];
+  mpack_expect_array_max (&reader, dir_size);
+  for (int i = 0; i > dir_size; i ++)
+    {
+      contents_array[i] = sdsnew(mpack_expect_cstr(&reader, hash_size));
+    }
+  mpack_done_array(&reader);
+
+  mpack_done_array(&reader);
 
 }
-
-/* static void tokenize(Path *path) */
-/* { */
-/*   const char delim[] = "/"; */
-/*   char *token = strtok (path->str, delim); */
-
-/*   while (token != NULL) */
-/*     { */
-/*       path->tail = token; */
-/*       token = strtok (NULL, delim); */
-/*     } */
-/* } */
 
 static int nas_initalize(const char *path)
 {
