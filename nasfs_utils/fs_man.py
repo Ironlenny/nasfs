@@ -1,25 +1,25 @@
 #!/usr/bin/python3
-import pdb
 import msgpack
-
 
 class FSMan():
 
     def __init__(self):
-        self._super_block = 'super_block.mp'
-        self._meta_root = 'root.mp'
+        self._super_block = 'super_block'
+        self._meta_root = 'root'
 
-    def create_fs(self, vol, raidLv, uid, gid, perm):
+    def create_fs(self, vol, raidLv, uid, gid, perm, ctime):
         # Schema:
         # [
-        # Field 1: 'contains' array of strings
-        # Field 2: 'uid' int
-        # Field 3: 'gid' int
-        # Field 4: 'permisions' int
-        # Field 5: 'atime' int
-        # Field 6: 'directory' bool
-        # ]
-        root_rec = [['.', '..'], uid, gid, perm, None, True]
+        #  Field 1: 'name' string 256 characters
+        #  Field 2: 'dir' bool
+        #  Field 3: 'uid' uint64
+        #  Field 4: 'gid' uint64
+        #  Field 5: 'perm' uint8
+        #  Field 6: 'ctime' uint64
+        #  Field 7: 'dir_size' uint32; number of entries
+        #  Field 7: 'contents_a' array of strings; entries
+        #  ]
+        root_rec = ['root', True, uid, gid, perm, ctime, 0, []]
         file = open(self._super_block, 'bx')
         file.write(msgpack.dumps({"vol":vol, "raid_lv":raidLv}))
         file.close()
