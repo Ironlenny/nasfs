@@ -1,18 +1,17 @@
 bin = ../../bin
-bson_loc = $(shell pkg-config --cflags --libs libbson-1.0)
 scripts = $(bin)/test_all.sh $(bin)/setup.py
-tests: $(bin)/test_fs $(bin)/test_meta $(scripts)
+tests: $(bin)/test_fs $(scripts)
+driver = ../../nasfs_driver
 
 clean:
 	rm -rf $(bin)
 
-$(bin)/test_meta: test_meta_db.c ../../nasfs_driver/meta_db.c
+# '-D_FILE_OFFSET_BITS=64' is required by FUSE
+$(bin)/test_fs: test_nasfs.c $(driver)/nasfs.c $(driver)/mpack.c $(driver)/sds.c
 	mkdir -p $(@D)
-	clang -Wextra -W -Wall test_meta_db.c ../../nasfs_driver/meta_db.c -l tap -l lmdb -g -o $@
-
-$(bin)/test_fs: test_nasfs.c ../../nasfs_driver/nasfs.c ../../nasfs_driver/meta_db.c
-	mkdir -p $(@D)
-	clang -D_FILE_OFFSET_BITS=64 -Wextra -W -Wall test_nasfs.c ../../nasfs_driver/meta_db.c ../../nasfs_driver/nasfs.c $(bson_loc) -l tap -l lmdb -g -Wno-error=unused-function -Wno-error=macro-redefined -o $@
+	clang -D_FILE_OFFSET_BITS=64 -Wextra -Wall test_nasfs.c $(driver)/nasfs.c \
+	$(driver)/sds.c $(driver)/mpack.c  -l tap -g -Wno-error=unused-function \
+	-Wno-error=macro-redefined -o $@
 
 
 $(scripts): \
