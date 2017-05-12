@@ -10,8 +10,7 @@
    All strings should be UTF8
 */
 
-static mpack_reader_t reader;
-static int max_name_len = 256 * sizeof(char);
+static const int max_name_len = 256 * sizeof(char);
 static const char *vol[10];
 static const int array_size = 7;
 static const int hash_size = 160; /* Size of hash string */
@@ -19,11 +18,11 @@ typedef struct
 {
   sds name;
   bool dir;
-  unsigned long long int uid;
-  unsigned long long int gid;
-  unsigned char perm;
-  unsigned long long int ctime;
-  unsigned int dir_size;
+  uint64_t uid;
+  uint64_t gid;
+  uint8_t perm;
+  uint64_t ctime;
+  uint32_t dir_size;
   sds *contents_a;
 } Inode;
 
@@ -40,67 +39,68 @@ typedef struct
 /*  ] */
 static Inode *mp_load(char *path)
 {
-  mpack_error_t error;
+  mpack_reader_t reader;
+  mpack_error_t error = 0;
 
   mpack_reader_init_file(&reader, path);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   Inode *new_node = malloc(sizeof(Inode));
   mpack_expect_array_match(&reader, 8);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
   new_node->name = sdsempty();
   new_node->name = sdsgrowzero(new_node->name, max_name_len);
   mpack_expect_utf8_cstr(&reader, new_node->name, sdslen(new_node->name));
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   new_node->dir = mpack_expect_bool(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   new_node->uid = mpack_expect_u64(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   new_node->gid = mpack_expect_u64(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   new_node->perm = mpack_expect_u8(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   new_node->ctime = mpack_expect_u64(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   new_node->dir_size = mpack_expect_u32(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   mpack_expect_array_match(&reader, new_node->dir_size);
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
 
   new_node->contents_a = malloc(new_node->dir_size * sizeof(sds *));
@@ -114,11 +114,17 @@ static Inode *mp_load(char *path)
     }
 
   if (error != mpack_ok) {
-    fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+    goto fail;
   }
+  
+  mpack_done_array(&reader);
+  mpack_done_array(&reader);
 
-  mpack_done_array(&reader);
-  mpack_done_array(&reader);
+ fail:
+  fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+  mpack_reader_destroy(&reader);
+  free(new_node);
+  new_node = NULL;
 
   return new_node;
 }
