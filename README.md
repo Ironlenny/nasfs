@@ -17,3 +17,10 @@ data in the background. No extra steps required.
 NASFS is currently in development, and at this point the filesystem logic has
 not been implemented. Basic mirroring and standard filesystem operations I hope
 to have implemented by January.
+
+##Dependencies
+
+Simple Dynamic Strings: https://github.com/antirez/sds
+Mpack: https://github.com/ludocode/mpack
+Test Anything Protocol: https://github.com/zorgnax/libtap
+msgpack-python: https://pypi.python.org/pypi/msgpack-python
