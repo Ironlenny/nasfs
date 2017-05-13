@@ -15,14 +15,19 @@ class FSMan():
         #  Field 2: 'dir' bool
         #  Field 3: 'uid' uint64
         #  Field 4: 'gid' uint64
-        #  Field 5: 'perm' uint8
+        #  Field 5: 'perm' uint16
         #  Field 6: 'ctime' uint64
         #  Field 7: 'dir_size' uint32; number of entries
         #  Field 7: 'contents_a' array of strings; entries
         #  ]
-        root_rec = ['root', True, ctypes.c_uint64(uid), ctypes.c_uint64(gid),
-                    ctypes.c_uint8(perm), ctypes.c_uint64(ctime),
-                    ctypes.c_uint32(0), []]
+        self.uid = ctypes.c_uint64(uid)
+        self.gid = ctypes.c_uint64(gid)
+        self.ctime = ctypes.c_uint64(ctime)
+        self.dir_size = ctypes.c_uint32(0)
+        self.perm = ctypes.c_uint16(perm)
+
+        root_rec = ['root', True, self.uid.value, self.gid.value,
+                    self.perm.value, self.ctime.value, self.dir_size.value, []]
         file = open(self._super_block, 'bx')
         file.write(msgpack.packb({"vol":vol, "raid_lv":raidLv}))
         file.close()

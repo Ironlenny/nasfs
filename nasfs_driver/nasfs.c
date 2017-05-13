@@ -32,7 +32,7 @@ typedef struct
 /*  Field 2: 'dir' bool */
 /*  Field 3: 'uid' uint64 */
 /*  Field 4: 'gid' uint64 */
-/*  Field 5: 'perm' uint8 */
+/*  Field 5: 'perm' uint16 */
 /*  Field 6: 'ctime' uint64 */
 /*  Field 7: 'dir size' uint32; number of entries */
 /*  Field 7: 'contents' array of strings; entries */
@@ -80,7 +80,7 @@ static Inode *mp_load(char *path)
     goto fail;
   }
 
-  new_node->perm = mpack_expect_u8(&reader);
+  new_node->perm = mpack_expect_u16(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
@@ -99,6 +99,7 @@ static Inode *mp_load(char *path)
   }
 
   mpack_expect_array_match(&reader, new_node->dir_size);
+  error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
@@ -119,6 +120,8 @@ static Inode *mp_load(char *path)
 
   mpack_done_array(&reader);
   mpack_done_array(&reader);
+
+  return new_node;
 
  fail:
   fprintf(stderr, "Error %i occurred reading data!\n", (int)error);

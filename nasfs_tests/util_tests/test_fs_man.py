@@ -6,6 +6,7 @@ import os
 import shutil
 import msgpack
 import time
+import math
 
 super_file = 'super_block'
 meta_root = 'root'
@@ -13,10 +14,10 @@ raid_lv = 1
 dev = [b'/dev/sda1']
 super_dict = {b'vol': dev, b'raid_lv': raid_lv}
 mount = './'
-uid = b'1'
-gid = b'1'
+uid = 1
+gid = 1
 perm = 772
-ctime = time.time()
+ctime = math.trunc(time.time())
 
 def _open_mp_file(path):
     file = open(path, 'rb')
@@ -36,7 +37,6 @@ def test_create_super_file():
     assert super_dict == msgpack_dict
     test_rec = [b'root', True, uid, gid, perm, ctime, 0, []]
     assert test_rec == _open_mp_file(meta_root)
-
 def test_add_volume():
     _cleanup()
     test_obj = fs_man.FSMan()
