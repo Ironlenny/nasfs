@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import msgpack
+import ctypes
 
 class FSMan():
 
@@ -19,20 +20,22 @@ class FSMan():
         #  Field 7: 'dir_size' uint32; number of entries
         #  Field 7: 'contents_a' array of strings; entries
         #  ]
-        root_rec = ['root', True, uid, gid, perm, ctime, 0, []]
+        root_rec = ['root', True, ctypes.c_uint64(uid), ctypes.c_uint64(gid),
+                    ctypes.c_uint8(perm), ctypes.c_uint64(ctime),
+                    ctypes.c_uint32(0), []]
         file = open(self._super_block, 'bx')
-        file.write(msgpack.dumps({"vol":vol, "raid_lv":raidLv}))
+        file.write(msgpack.packb({"vol":vol, "raid_lv":raidLv}))
         file.close()
         file = open(self._meta_root, 'bx')
-        file.write(msgpack.dumps(root_rec))
+        file.write(msgpack.packb(root_rec))
         file.close()
 
     def add_vol(self, mount, vol):
         file = open( mount + self._super_block, 'br+')
-        data = msgpack.loads(file.read())
+        data = msgpack.unpackb(file.read())
         data[b'vol'].append(vol)
         file.seek(0)
-        file.write(msgpack.dumps(data))
+        file.write(msgpack.packb(data))
         file.close()
 
     def remove_vol(self, mount, vol):

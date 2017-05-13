@@ -41,6 +41,7 @@ static Inode *mp_load(char *path)
 {
   mpack_reader_t reader;
   mpack_error_t error = 0;
+  Inode *new_node = malloc(sizeof(Inode));
 
   mpack_reader_init_file(&reader, path);
   error = mpack_reader_flag_if_error (&reader, error);
@@ -48,7 +49,6 @@ static Inode *mp_load(char *path)
     goto fail;
   }
 
-  Inode *new_node = malloc(sizeof(Inode));
   mpack_expect_array_match(&reader, 8);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
@@ -116,7 +116,7 @@ static Inode *mp_load(char *path)
   if (error != mpack_ok) {
     goto fail;
   }
-  
+
   mpack_done_array(&reader);
   mpack_done_array(&reader);
 
