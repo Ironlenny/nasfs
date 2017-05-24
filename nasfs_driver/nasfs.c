@@ -3,8 +3,8 @@
 #include <fuse.h>
 #include <errno.h>
 #include <stdbool.h>
-#include "sds.h"
-#include "mpack.h"
+#include "../lib/sds.h"
+#include "../lib/mpack.h"
 
 /* TODO
    All strings should be UTF8
