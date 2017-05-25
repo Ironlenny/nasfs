@@ -12,11 +12,14 @@ clean:
 	rm -rf $(bin)
 
 # '-D_FILE_OFFSET_BITS=64' is required by FUSE
-$(bin)/test_fs: $(driver_tests)/test_nasfs.c $(driver)/nasfs.c $(lib)/mpack.c $(lib)/sds.c
+$(bin)/test_fs: $(driver_tests)/test_nasfs.c $(driver)/nasfs.c $(lib)/mpack.c \
+	$(lib)/sds.c
+
 	mkdir -p $(@D)
-	clang -D_FILE_OFFSET_BITS=64 -Wextra -Wall $(driver_tests)/test_nasfs.c $(driver)/nasfs.c \
-	$(lib)/sds.c $(lib)/mpack.c  -l tap -g -Wno-error=unused-function \
-	-Wno-error=macro-redefined -o $@
+	clang -D_FILE_OFFSET_BITS=64 -Wextra -Wall $(driver_tests)/test_nasfs.c
+	$(driver)/nasfs.c $(lib)/sds.c $(lib)/mpack.c  -l tap -g \
+	-Wno-error=unused-function -Wno-error=macro-redefined -o $@
+
 
 $(scripts): \
 $(bin)/%: $(test_scripts)/%
