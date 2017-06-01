@@ -24,3 +24,4 @@ Simple Dynamic Strings: https://github.com/antirez/sds
 Mpack: https://github.com/ludocode/mpack
 Test Anything Protocol: https://github.com/zorgnax/libtap
 msgpack-python: https://pypi.python.org/pypi/msgpack-python
+msgpack-tools: https://github.com/ludocode/msgpack-tools
