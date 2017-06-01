@@ -254,12 +254,12 @@ static int nas_releasedir()
 
 static int nas_mkdir(const char *path, mode_t mode)
 {
-  return -ENOSYS;
+  return mkdir(path, mode);
 }
 
-static int nas_rmdir()
+static int nas_rmdir(path)
 {
-  return -ENOSYS;
+  return rmdir(path);
 }
 
 static int nas_create()
