@@ -20,10 +20,10 @@ typedef struct
   bool dir;
   uint64_t uid;
   uint64_t gid;
-  uint8_t perm;
+  uint16_t perm;
   uint64_t ctime;
   uint32_t dir_size;
-  sds *contents_a;
+  sds *contents_a;              /* Array of sds * */
 } Inode;
 
 /* Schema: */
