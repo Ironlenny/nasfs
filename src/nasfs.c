@@ -135,8 +135,101 @@ static int mp_load(char *path, Inode **new_node)
 }
 
 /* Store path meta-data. Takes an inode. Returns void. */
+static int mp_store(Inode *node, char *path)
+{
+  mpack_error_t error = 0;
+  mpack_writer_t writer;
+  size_t count = 7;         /* number of members in struct */
+  mpack_writer_init_file(&writer, path);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
 
-  return new_node;
+  mpack_start_array(&writer, count);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_write_utf8_cstr(&writer, node->name);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_write_bool(&writer, node->dir);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_write_u64(&writer, node->uid);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_write_u64(&writer, node->gid);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_write_u16(&writer, node->perm);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_write_u64(&writer, node->ctime);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_write_u32(&writer, node->dir_size);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_start_array(&writer, node->dir_size);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+
+  for (int i = 0; i < node->dir_size; i++)
+    {
+      mpack_write_cstr(&writer, node->contents_a[i]);
+      error = mpack_writer_error(&writer);
+      if (error != mpack_ok) {
+        goto fail;
+      }
+    }
+
+  mpack_finish_array(&writer);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_finish_array(&writer);
+  error = mpack_writer_error(&writer);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_writer_destroy(&writer);
+
+  return 0;
+
+ fail:
+  mpack_writer_destroy(&writer);
+
+  return (int) error;
 }
 
 static int nas_initalize(const char *path)
