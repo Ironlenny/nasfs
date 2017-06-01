@@ -34,14 +34,14 @@ typedef struct
 /*  Field 4: 'gid' uint64 */
 /*  Field 5: 'perm' uint16 */
 /*  Field 6: 'ctime' uint64 */
-/*  Field 7: 'dir size' uint32; number of entries */
-/*  Field 7: 'contents' array of strings; entries */
+/*  Field 7: 'dir_size' uint32; number of entries */
+/*  Field 7: 'contents_a' array of strings; entries */
 /*  ] */
-static Inode *mp_load(char *path)
+static int mp_load(char *path, Inode **new_node)
 {
   mpack_reader_t reader;
   mpack_error_t error = 0;
-  Inode *new_node = malloc(sizeof(Inode));
+  *new_node = malloc(sizeof(Inode));
 
   mpack_reader_init_file(&reader, path);
   error = mpack_reader_flag_if_error (&reader, error);
@@ -54,63 +54,63 @@ static Inode *mp_load(char *path)
   if (error != mpack_ok) {
     goto fail;
   }
-  new_node->name = sdsempty();
-  new_node->name = sdsgrowzero(new_node->name, max_name_len);
-  mpack_expect_utf8_cstr(&reader, new_node->name, sdslen(new_node->name));
+  (*new_node)->name = sdsempty();
+  (*new_node)->name = sdsgrowzero((*new_node)->name, max_name_len);
+  mpack_expect_utf8_cstr(&reader, (*new_node)->name, sdslen((*new_node)->name));
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  new_node->dir = mpack_expect_bool(&reader);
+  (*new_node)->dir = mpack_expect_bool(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  new_node->uid = mpack_expect_u64(&reader);
+  (*new_node)->uid = mpack_expect_u64(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  new_node->gid = mpack_expect_u64(&reader);
+  (*new_node)->gid = mpack_expect_u64(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  new_node->perm = mpack_expect_u16(&reader);
+  (*new_node)->perm = mpack_expect_u16(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  new_node->ctime = mpack_expect_u64(&reader);
+  (*new_node)->ctime = mpack_expect_u64(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  new_node->dir_size = mpack_expect_u32(&reader);
+  (*new_node)->dir_size = mpack_expect_u32(&reader);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  mpack_expect_array_match(&reader, new_node->dir_size);
+  mpack_expect_array_match(&reader, (*new_node)->dir_size);
   error = mpack_reader_flag_if_error (&reader, error);
   if (error != mpack_ok) {
     goto fail;
   }
 
-  new_node->contents_a = malloc(new_node->dir_size * sizeof(sds *));
-  for (unsigned int i = 0; i < new_node->dir_size; i++)
+  (*new_node)->contents_a = malloc((*new_node)->dir_size * sizeof(sds *));
+  for (u_int i = 0; i < (*new_node)->dir_size; i++)
     {
-      new_node->contents_a[i] = sdsempty();
-      new_node->contents_a[i] = sdsgrowzero(new_node->contents_a[i],
+      (*new_node)->contents_a[i] = sdsempty();
+      (*new_node)->contents_a[i] = sdsgrowzero((*new_node)->contents_a[i],
                                             hash_size * sizeof(char));
-      mpack_expect_cstr(&reader, new_node->contents_a[i],
+      mpack_expect_cstr(&reader, (*new_node)->contents_a[i],
                         hash_size * sizeof(char));
     }
 
@@ -121,13 +121,20 @@ static Inode *mp_load(char *path)
   mpack_done_array(&reader);
   mpack_done_array(&reader);
 
-  return new_node;
+  mpack_reader_destroy(&reader);
+
+  return 0;
 
  fail:
   fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
   mpack_reader_destroy(&reader);
-  free(new_node);
-  new_node = NULL;
+  free((*new_node));
+  *new_node = NULL;
+
+  return (int)error;
+}
+
+/* Store path meta-data. Takes an inode. Returns void. */
 
   return new_node;
 }
