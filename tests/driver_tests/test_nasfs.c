@@ -5,9 +5,20 @@
 #include <stdlib.h>
 #include "../../lib/sds.h"
 
-static char super_path[] = "./super_block";
+static char super_path[] = "./test_super";
 char root_path[] = "./test_root";
 Inode *node = NULL;
+
+void test_nas_init()
+{
+  printf("Initialize the file system\n");
+  if (cmp_ok(nas_initalize(super_path), "==", 0, "File system initialized"))
+    {
+      cmp_ok(raid_lv, "==", 1, "Raid level set to 1");
+      is(vol[0], "./a", "'a' is the first volume");
+      is(vol[1], "./b", "'b' is the second volume");
+    }
+}
 
 void test_mp_load(char *path)
 {
@@ -31,6 +42,7 @@ void test_mp_load(char *path)
     }
 }
 
+
 void test_mp_store()
 {
   printf("Try to write inode to file:\n");
@@ -40,12 +52,14 @@ void test_mp_store()
       return;
     }
   cmp_ok(mp_store(node, root_path), "==", 0, "Store successful");
+  cmp_ok(mp_load(root_path, &node), "==", 0, "Load successful");
 }
 
 int main(int argc, const char *argv[])
 {
   printf("nasfs.c tests:\n");
   plan(NO_PLAN);
+  test_nas_init();
   test_mp_load(root_path);
   test_mp_store();
   cmp_ok(nas_mkdir("foo", 0777), "==", 0, "Made directory 'foo'");

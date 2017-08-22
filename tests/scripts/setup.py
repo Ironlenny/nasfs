@@ -1,17 +1,20 @@
 #!/usr/bin/python3
 
 import sys
-sys.path.append ("../nasfs_utils/")
-import fs_man
+import mp_gen
 import math
 import time
 
-fs = fs_man.FSMan()
 vol = ['./a', './b']
 raid_lv = 1
 uid = 1
 gid = 1
 perm = 777
 ctime = math.trunc(time.time())
+inode = '0'
+super_block = 'block'
+dir_size = 0
 
-fs.create_fs(vol, raid_lv, uid, gid, perm, ctime)
+
+mp_gen.gen_super(vol, raid_lv, super_block)
+mp_gen.generate(uid, gid, perm, ctime, inode, dir_size)

@@ -11,7 +11,8 @@
 */
 
 static const int max_name_len = 256 * sizeof(char);
-static const char *vol[10];
+static int raid_lv = 0;
+static const sds *vol[10];
 static const int array_size = 7;
 static const int hash_size = 160; /* Size of hash string */
 typedef struct
@@ -128,7 +129,7 @@ static int mp_load(char *path, Inode **new_node)
  fail:
   fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
   mpack_reader_destroy(&reader);
-  free((*new_node));
+  free(*new_node);
   *new_node = NULL;
 
   return (int)error;
@@ -231,10 +232,64 @@ static int mp_store(Inode *node, char *path)
 
   return (int) error;
 }
-
+/* 'super' node scheme */
+/* [ */
+/*  Field 1: uint8 raid level */
+/*  Field 2: uint8 number of volumes */
+/*  Field 3: array of cstrings volume paths */
+/* ] */
 static int nas_initalize(const char *path)
 {
-  return -ENOSYS;
+  mpack_reader_t reader;
+  mpack_error_t error = 0;
+  uint8_t vol_count = 0;
+
+  mpack_reader_init_file(&reader, path);
+  error = mpack_reader_flag_if_error (&reader, error);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  raid_lv = mpack_expect_u8(&reader); /* Field 1 */
+  error = mpack_reader_flag_if_error (&reader, error);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  vol_count = mpack_expect_u8(&reader); /* Field 2 */
+  error = mpack_reader_flag_if_error (&reader, error);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  mpack_expect_array_match(&reader, vol_count); /* Field 3 */
+  error = mpack_reader_flag_if_error (&reader, error);
+  if (error != mpack_ok) {
+    goto fail;
+  }
+
+  for (u_int i = 0; i < vol_count; i++)
+    {
+      vol[i] = sdsempty();
+      vol[i] = sdsgrowzero(vol[i], max_name_len);
+      mpack_expect_cstr(&reader, vol[i], sdslen(vol[i]));
+      error = mpack_reader_flag_if_error (&reader, error);
+      if (error != mpack_ok) {
+        goto fail;
+      }
+    }
+  mpack_done_array(&reader);
+  mpack_done_array(&reader);
+
+  return 0;
+
+ fail:
+  fprintf(stderr, "Error %i occurred reading data!\n", (int)error);
+  fprintf(stderr, mpack_error_to_string(error));
+  fprintf(stderr, "\n");
+  mpack_reader_destroy(&reader);
+
+  return (int)error;
 }
 
 static int nas_opendir(const char *path, struct fuse_file_info *file_handle)
@@ -299,3 +354,8 @@ static int nas_release()
 	.write		= nas_write,
 	.release	= nas_release,
 };
+
+int main(int argc, char *argv[])
+{
+  return 0;
+}
